@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Created by tso on 21/04/15.
  */
-public class RTGraph extends SurfaceView implements Runnable{
+public class RTGraphSurfaceView extends SurfaceView implements Runnable{
 
     Thread thread = null;
     Paint paint = new Paint();
@@ -43,9 +43,9 @@ public class RTGraph extends SurfaceView implements Runnable{
     private Queue<Integer> trailingHalf = new ConcurrentLinkedQueue<Integer>();
     private List<Float> data;
 
-    private boolean running = true;
+    private boolean running = false;
 
-    public RTGraph(Context context, AttributeSet attrs) {
+    public RTGraphSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         surfaceHolder = getHolder();
         maskPaint = new Paint();
@@ -57,8 +57,22 @@ public class RTGraph extends SurfaceView implements Runnable{
     }
 
     public void start(){
+        running = true;
         thread = new Thread(this);
         thread.start();
+    }
+
+    public void pause(){
+        running = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resume(){
+        start();
     }
 
     @Override
@@ -82,6 +96,8 @@ public class RTGraph extends SurfaceView implements Runnable{
 
                     paint.setColor(Color.BLACK);
                     Canvas canvas = surfaceHolder.lockCanvas();
+                    if (canvas == null) continue;
+
                     canvas.drawColor(bgColor);
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(1);
